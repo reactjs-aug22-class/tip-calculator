@@ -1,63 +1,74 @@
 import './App.css'
 
-import { useMemo, useState } from 'react'
+import { useRef, useState } from 'react'
+
+const calculateTip = (bill, tip, people) => {
+  const totalTip = bill * tip * 0.01
+  const tipPerPerson = totalTip / people
+  const payPerPerson = (bill + totalTip) / people
+
+  return {
+    totalTip,
+    tipPerPerson,
+    payPerPerson
+  }
+}
 
 function App() {
-  const [bill, setBill] = useState(0)
-  const [tip, setTip] = useState(0)
-  const [people, setPeople] = useState(1)
+  const billRef = useRef()
+  const tipRef = useRef()
+  const peopleRef = useRef()
 
-  const totalTip = useMemo(() => {
-    return bill * tip * 0.01
-  }, [bill, tip])
-  const tipPerPerson = useMemo(() => totalTip / people, [totalTip, people])
-  const payPerPerson = useMemo(
-    () => (bill + totalTip) / people,
-    [bill, totalTip, people]
-  )
+  const [calc, setCalc] = useState({
+    totalTip: '-',
+    tipPerPerson: '-',
+    payPerPerson: '-'
+  })
 
   console.count('component re-rendered')
 
   return (
     <div className="App">
       <label htmlFor="bill">Bill</label>
-      <input
-        type="number"
-        id="bill"
-        min="0"
-        value={bill}
-        onChange={evt => setBill(parseInt(evt.target.value))}
-      />
+      <input ref={billRef} type="number" id="bill" min="0" defaultValue="100" />
 
       <label htmlFor="tip">Tip %</label>
-      <input
-        type="number"
-        id="tip"
-        min="0"
-        value={tip}
-        onChange={evt => setTip(parseInt(evt.target.value))}
-      />
+      <input ref={tipRef} type="number" id="tip" min="0" defaultValue="0" />
 
       <label htmlFor="people">No. of People</label>
       <input
+        ref={peopleRef}
         type="number"
         id="people"
         min="1"
-        value={people}
-        onChange={evt => setPeople(parseInt(evt.target.value))}
+        defaultValue="1"
       />
+
+      <button
+        onClick={() =>
+          setCalc(
+            calculateTip(
+              parseInt(billRef.current.value),
+              parseInt(tipRef.current.value),
+              parseInt(peopleRef.current.value)
+            )
+          )
+        }
+      >
+        Calculate!
+      </button>
 
       <p>
         Total tip: CAD$
-        {isNaN(totalTip) ? '-' : totalTip.toFixed(2)}
+        {isNaN(calc.totalTip) ? '-' : calc.totalTip.toFixed(2)}
       </p>
       <p>
         Tip per person: CAD$
-        {isNaN(tipPerPerson) ? '-' : tipPerPerson.toFixed(2)}
+        {isNaN(calc.tipPerPerson) ? '-' : calc.tipPerPerson.toFixed(2)}
       </p>
       <p>
         Total split per person: CAD$
-        {isNaN(payPerPerson) ? '-' : payPerPerson.toFixed(2)}
+        {isNaN(calc.payPerPerson) ? '-' : calc.payPerPerson.toFixed(2)}
       </p>
     </div>
   )
